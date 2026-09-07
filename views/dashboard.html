@@ -1,0 +1,2009 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Splitwise - Web App</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --splitwise-teal: #5BC5A7;
+            --splitwise-teal-dark: #1CC29F;
+            --splitwise-orange: #FF652F;
+            --splitwise-bg: #f6f6f6;
+            --splitwise-text: #333333;
+            --splitwise-muted: #999999;
+            --splitwise-border: #e0e0e0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--splitwise-bg);
+            color: var(--splitwise-text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ================= SPLITWISE TOP NAVBAR ================= */
+        header.splitwise-navbar {
+            background-color: var(--splitwise-teal);
+            height: 46px;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.12);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .navbar-content {
+            max-width: 1040px;
+            width: 100%;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .brand-logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            color: white;
+            font-size: 20px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        .brand-logo-icon {
+            width: 26px;
+            height: 26px;
+            background: white;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--splitwise-teal);
+            font-weight: 900;
+            font-size: 16px;
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .user-dropdown {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .user-avatar-circle {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: #ffffff;
+            color: var(--splitwise-teal);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .btn-nav-logout {
+            background: rgba(0, 0, 0, 0.15);
+            border: none;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-nav-logout:hover {
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        /* ================= 3-COLUMN LAYOUT ================= */
+        .splitwise-container {
+            max-width: 1040px;
+            width: 100%;
+            margin: 20px auto;
+            display: grid;
+            grid-template-columns: 200px 1fr 240px;
+            background: #ffffff;
+            border: 1px solid var(--splitwise-border);
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            min-height: calc(100vh - 100px);
+        }
+
+        /* ================= LEFT COLUMN ================= */
+        aside.left-col {
+            border-right: 1px solid var(--splitwise-border);
+            padding: 16px 0;
+            background: #ffffff;
+        }
+
+        .left-menu-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 16px;
+            font-size: 14px;
+            color: #666;
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.15s;
+            border-left: 4px solid transparent;
+        }
+
+        .left-menu-item:hover {
+            background: #f7f7f7;
+            color: #333;
+        }
+
+        .left-menu-item.active {
+            background: #f7f7f7;
+            color: var(--splitwise-teal-dark);
+            font-weight: 700;
+            border-left-color: var(--splitwise-teal);
+        }
+
+        .left-section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 16px 6px 16px;
+            font-size: 11px;
+            font-weight: 800;
+            color: #999;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .left-section-header a {
+            color: var(--splitwise-teal-dark);
+            text-decoration: none;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .left-section-header a:hover {
+            text-decoration: underline;
+        }
+
+        .group-nav-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 16px;
+            font-size: 13px;
+            color: #444;
+            cursor: pointer;
+            border-left: 4px solid transparent;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            overflow: hidden;
+        }
+
+        .group-nav-item:hover {
+            background: #f7f7f7;
+            color: #111;
+        }
+
+        .group-nav-item.active {
+            background: #f7f7f7;
+            color: var(--splitwise-teal-dark);
+            font-weight: 700;
+            border-left-color: var(--splitwise-teal);
+        }
+
+        .group-icon-bullet {
+            color: #bbb;
+            font-size: 14px;
+        }
+
+        .invite-box {
+            margin: 24px 16px 10px 16px;
+            padding: 12px;
+            background: #fdfdfd;
+            border: 1px dashed #ccc;
+            border-radius: 4px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        /* ================= CENTER COLUMN ================= */
+        main.center-col {
+            border-right: 1px solid var(--splitwise-border);
+            display: flex;
+            flex-direction: column;
+            background: #ffffff;
+        }
+
+        .center-top-bar {
+            background: #eeeeee;
+            padding: 14px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--splitwise-border);
+        }
+
+        .center-title-box h1 {
+            font-size: 22px;
+            font-weight: 800;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .center-title-box p {
+            font-size: 12px;
+            color: #777;
+            margin-top: 2px;
+        }
+
+        .center-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-add-expense {
+            background: var(--splitwise-orange);
+            color: white;
+            border: none;
+            padding: 9px 16px;
+            font-size: 14px;
+            font-weight: 700;
+            border-radius: 4px;
+            cursor: pointer;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+            transition: background 0.15s;
+        }
+
+        .btn-add-expense:hover {
+            background: #e55520;
+        }
+
+        .btn-settle-up {
+            background: var(--splitwise-teal);
+            color: white;
+            border: none;
+            padding: 9px 16px;
+            font-size: 14px;
+            font-weight: 700;
+            border-radius: 4px;
+            cursor: pointer;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+            transition: background 0.15s;
+        }
+
+        .btn-settle-up:hover {
+            background: var(--splitwise-teal-dark);
+        }
+
+        /* DASHBOARD SUMMARY ROW */
+        .dashboard-balances-summary {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            border-bottom: 1px solid var(--splitwise-border);
+            text-align: center;
+            padding: 14px 0;
+            background: #fafafa;
+        }
+
+        .summary-block {
+            border-right: 1px solid #e8e8e8;
+            padding: 0 10px;
+        }
+
+        .summary-block:last-child {
+            border-right: none;
+        }
+
+        .summary-label {
+            font-size: 12px;
+            color: #888;
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .summary-val {
+            font-size: 18px;
+            font-weight: 800;
+        }
+
+        .val-positive { color: var(--splitwise-teal-dark); }
+        .val-negative { color: var(--splitwise-orange); }
+        .val-neutral { color: #888; }
+
+        /* EXPENSE FEED */
+        .feed-container {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .expense-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 18px;
+            border-bottom: 1px solid #f0f0f0;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+        .expense-row:hover {
+            background: #fbfbfb;
+        }
+
+        .expense-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .date-badge {
+            text-align: center;
+            width: 38px;
+            color: #888;
+        }
+
+        .date-month {
+            font-size: 10px;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        .date-day {
+            font-size: 18px;
+            font-weight: 800;
+            color: #444;
+            line-height: 1;
+        }
+
+        .category-icon {
+            width: 36px;
+            height: 36px;
+            background: #e9ecef;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        .expense-desc-box h4 {
+            font-size: 15px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 2px;
+        }
+
+        .expense-desc-box p {
+            font-size: 12px;
+            color: #888;
+        }
+
+        .expense-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            text-align: right;
+        }
+
+        .payer-column {
+            font-size: 12px;
+            color: #888;
+        }
+
+        .payer-column strong {
+            display: block;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .share-column {
+            min-width: 80px;
+            font-size: 12px;
+        }
+
+        .share-column strong {
+            display: block;
+            font-size: 15px;
+            font-weight: 800;
+        }
+
+        .empty-feed {
+            text-align: center;
+            padding: 60px 20px;
+            color: #888;
+        }
+
+        .empty-feed h3 {
+            font-size: 20px;
+            color: #444;
+            margin-bottom: 8px;
+        }
+
+        /* ================= RIGHT COLUMN ================= */
+        aside.right-col {
+            padding: 16px;
+            background: #ffffff;
+            font-size: 13px;
+        }
+
+        .right-section-title {
+            font-size: 12px;
+            font-weight: 800;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+        }
+
+        .member-balance-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #f4f4f4;
+        }
+
+        .member-avatar-mini {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #e4e4e4;
+            color: #666;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .member-info h5 {
+            font-size: 13px;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .member-info p {
+            font-size: 12px;
+        }
+
+        .btn-add-member-link {
+            display: inline-block;
+            margin-top: 10px;
+            color: var(--splitwise-teal-dark);
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .btn-add-member-link:hover {
+            text-decoration: underline;
+        }
+
+        /* ================= MODALS ================= */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0,0,0,0.55);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        .modal-box {
+            background: #ffffff;
+            border-radius: 6px;
+            width: 100%;
+            max-width: 440px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+            overflow: hidden;
+        }
+
+        .modal-header-teal {
+            background: var(--splitwise-teal);
+            color: white;
+            padding: 12px 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header-teal h3 {
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .modal-close-btn {
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 20px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .modal-form-group {
+            margin-bottom: 15px;
+        }
+
+        .modal-form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 700;
+            color: #555;
+            margin-bottom: 5px;
+        }
+
+        .modal-form-group input,
+        .modal-form-group select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .modal-form-group input:focus,
+        .modal-form-group select:focus {
+            border-color: var(--splitwise-teal);
+        }
+
+        .amount-input-box {
+            display: flex;
+            align-items: center;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 0 10px;
+        }
+
+        .amount-input-box span {
+            font-size: 18px;
+            font-weight: 700;
+            color: #777;
+        }
+
+        .amount-input-box input {
+            border: none;
+            font-size: 20px;
+            font-weight: 800;
+        }
+
+        .modal-footer {
+            padding: 12px 20px 18px 20px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .btn-modal-cancel {
+            background: #eee;
+            border: none;
+            color: #666;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-weight: 700;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        .btn-modal-save {
+            background: var(--splitwise-teal);
+            border: none;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 4px;
+            font-weight: 700;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        .btn-modal-save:hover {
+            background: var(--splitwise-teal-dark);
+        }
+
+        /* DIRECT PAYMENT STYLES */
+        .settle-mode-tabs {
+            display: flex;
+            background: #f1f1f1;
+            border-radius: 4px;
+            padding: 3px;
+            margin-bottom: 16px;
+        }
+
+        .settle-tab-btn {
+            flex: 1;
+            padding: 8px;
+            text-align: center;
+            border: none;
+            background: transparent;
+            font-size: 13px;
+            font-weight: 700;
+            color: #666;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.15s;
+        }
+
+        .settle-tab-btn.active {
+            background: white;
+            color: var(--splitwise-teal-dark);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .btn-direct-pay {
+            background: linear-gradient(135deg, #1CC29F, #149b7e);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            font-weight: 800;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 2px 6px rgba(28, 194, 159, 0.35);
+            transition: opacity 0.2s, transform 0.1s;
+        }
+
+        .btn-direct-pay:hover {
+            opacity: 0.95;
+            transform: translateY(-1px);
+        }
+
+        .qr-card {
+            background: #fdfdfd;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .qr-card img {
+            width: 170px;
+            height: 170px;
+            border-radius: 6px;
+            border: 1px solid #eee;
+            margin: 10px 0;
+        }
+
+        .payment-method-selector {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .method-btn {
+            flex: 1;
+            padding: 8px 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: white;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .method-btn.active {
+            border-color: var(--splitwise-teal);
+            background: #effaf7;
+            color: var(--splitwise-teal-dark);
+        }
+
+        .receipt-card {
+            text-align: center;
+            padding: 10px 0;
+        }
+
+        .receipt-check-circle {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: #d1fae5;
+            color: #059669;
+            font-size: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 12px auto;
+        }
+
+        .receipt-details-table {
+            width: 100%;
+            margin-top: 15px;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 13px;
+        }
+
+        .receipt-details-table td {
+            padding: 8px 6px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .receipt-details-table td:last-child {
+            text-align: right;
+            font-weight: 700;
+            color: #333;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 860px) {
+            .splitwise-container {
+                grid-template-columns: 1fr;
+            }
+            aside.left-col, aside.right-col {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ================= SPLITWISE NAVBAR ================= -->
+    <header class="splitwise-navbar">
+        <div class="navbar-content">
+            <a href="/" class="brand-logo">
+                <div class="brand-logo-icon">S</div>
+                <span>Splitwise</span>
+            </a>
+
+            <div class="nav-right">
+                <div class="user-dropdown" onclick="openProfileModal()" title="View and edit profile" style="cursor: pointer;">
+                    <div class="user-avatar-circle" id="navUserAvatar">U</div>
+                    <span id="navUserName">User Name</span>
+                    <span style="font-size: 10px; margin-left: 2px;">✏️</span>
+                </div>
+                <button class="btn-nav-logout" onclick="logout()">Log out</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- ================= MAIN 3-COLUMN APP ================= -->
+    <div class="splitwise-container">
+
+        <!-- ================= LEFT COLUMN ================= -->
+        <aside class="left-col">
+            <div class="left-menu-item active" id="menuDashboard" onclick="switchToDashboard()">
+                <span>📊</span>
+                <span>Dashboard</span>
+            </div>
+
+            <div class="left-menu-item" id="menuAllExpenses" onclick="switchToAllExpenses()">
+                <span>📜</span>
+                <span>All expenses</span>
+            </div>
+
+            <!-- GROUPS LIST -->
+            <div class="left-section-header">
+                <span>GROUPS</span>
+                <a href="javascript:void(0)" onclick="openModal('createGroupModal')">+ add</a>
+            </div>
+
+            <div id="leftGroupsList">
+                <div style="padding: 6px 16px; font-size: 12px; color: #999;">Loading groups...</div>
+            </div>
+
+            <!-- FRIENDS -->
+            <div class="left-section-header" style="margin-top: 15px;">
+                <span>MEMBERS</span>
+            </div>
+            <div id="leftFriendsList">
+                <div style="padding: 6px 16px; font-size: 12px; color: #999;">No members yet</div>
+            </div>
+
+            <!-- INVITE BOX -->
+            <div class="invite-box">
+                <strong>Invite friends</strong>
+                <p style="margin-top: 4px; font-size: 11px;">Share group expenses and settle up anytime!</p>
+            </div>
+        </aside>
+
+        <!-- ================= CENTER COLUMN ================= -->
+        <main class="center-col">
+            <!-- TOP BAR -->
+            <div class="center-top-bar">
+                <div class="center-title-box">
+                    <h1 id="centerTitle">Dashboard</h1>
+                    <p id="centerSubtitle">Overview of all your group balances</p>
+                </div>
+                <div class="center-actions">
+                    <button class="btn-add-expense" onclick="openAddExpense()">Add an expense</button>
+                    <button class="btn-settle-up" onclick="openSettleUp()">Settle up</button>
+                </div>
+            </div>
+
+            <!-- BALANCES SUMMARY ROW (SPLITWISE SIGNATURE) -->
+            <div class="dashboard-balances-summary" id="balancesSummaryRow">
+                <div class="summary-block">
+                    <div class="summary-label">total balance</div>
+                    <div class="summary-val val-neutral" id="summaryTotalBal">₹0.00</div>
+                </div>
+                <div class="summary-block">
+                    <div class="summary-label">you owe</div>
+                    <div class="summary-val val-negative" id="summaryYouOwe">₹0.00</div>
+                </div>
+                <div class="summary-block">
+                    <div class="summary-label">you are owed</div>
+                    <div class="summary-val val-positive" id="summaryYouAreOwed">₹0.00</div>
+                </div>
+            </div>
+
+            <!-- EXPENSES & TRANSACTIONS FEED -->
+            <div class="feed-container" id="feedContainer">
+                <div class="empty-feed">
+                    <h3>No expenses yet</h3>
+                    <p>Click "Add an expense" above to record a new shared bill.</p>
+                </div>
+            </div>
+        </main>
+
+        <!-- ================= RIGHT COLUMN ================= -->
+        <aside class="right-col">
+            <div class="right-section-title" id="rightSectionTitle">GROUP BALANCES</div>
+            <div id="rightBalancesList">
+                <p style="color: #999;">Select a group on the left to see member balances.</p>
+            </div>
+
+            <div id="rightGroupActions" style="margin-top: 15px; display: none;">
+                <a href="javascript:void(0)" class="btn-add-member-link" onclick="openModal('addMemberModal')">+ Add people to group</a>
+            </div>
+        </aside>
+
+    </div>
+
+    <!-- ================= MODAL: CREATE GROUP ================= -->
+    <div class="modal-overlay" id="createGroupModal">
+        <div class="modal-box">
+            <div class="modal-header-teal">
+                <h3>Start a new group</h3>
+                <button class="modal-close-btn" onclick="closeModal('createGroupModal')">&times;</button>
+            </div>
+            <form onsubmit="handleCreateGroup(event)">
+                <div class="modal-body">
+                    <div class="modal-form-group">
+                        <label for="newGroupName">My group shall be called...</label>
+                        <input type="text" id="newGroupName" placeholder="e.g. Apartment 4B, Goa Trip 2026, Office Lunch" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-modal-cancel" onclick="closeModal('createGroupModal')">Cancel</button>
+                    <button type="submit" class="btn-modal-save">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ================= MODAL: ADD EXPENSE ================= -->
+    <div class="modal-overlay" id="addExpenseModal">
+        <div class="modal-box">
+            <div class="modal-header-teal">
+                <h3>Add an expense</h3>
+                <button class="modal-close-btn" onclick="closeModal('addExpenseModal')">&times;</button>
+            </div>
+            <form onsubmit="handleAddExpense(event)">
+                <div class="modal-body">
+                    <div class="modal-form-group">
+                        <label for="expenseGroupSelect">Group</label>
+                        <select id="expenseGroupSelect" required onchange="handleExpenseGroupChange()"></select>
+                    </div>
+
+                    <div class="modal-form-group">
+                        <label for="expenseDesc">Description</label>
+                        <input type="text" id="expenseDesc" placeholder="Enter a description (e.g. Dinner, Groceries, WiFi)" required>
+                    </div>
+
+                    <div class="modal-form-group">
+                        <label for="expenseAmount">Amount</label>
+                        <div class="amount-input-box">
+                            <span>₹</span>
+                            <input type="number" step="0.01" min="0.01" id="expenseAmount" placeholder="0.00" required>
+                        </div>
+                    </div>
+
+                    <div class="modal-form-group">
+                        <label for="expensePaidBy">Paid by</label>
+                        <select id="expensePaidBy" required></select>
+                    </div>
+
+                    <p style="font-size: 12px; color: #888;">and split <strong>equally</strong> between all group members.</p>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn-modal-cancel" onclick="closeModal('addExpenseModal')">Cancel</button>
+                    <button type="submit" class="btn-modal-save">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ================= MODAL: SETTLE UP (WITH DIRECT ONLINE PAYMENT) ================= -->
+    <div class="modal-overlay" id="settleModal">
+        <div class="modal-box">
+            <div class="modal-header-teal">
+                <h3>Settle up</h3>
+                <button class="modal-close-btn" onclick="closeModal('settleModal')">&times;</button>
+            </div>
+
+            <div class="modal-body">
+                <!-- Settle Method Tabs -->
+                <div class="settle-mode-tabs">
+                    <button type="button" class="settle-tab-btn active" id="tabDirectOnlineBtn" onclick="switchSettleMode('online')">⚡ Pay Online Directly</button>
+                    <button type="button" class="settle-tab-btn" id="tabOfflineCashBtn" onclick="switchSettleMode('cash')">💵 Record Cash Payment</button>
+                </div>
+
+                <div class="modal-form-group">
+                    <label for="settleGroupSelect">Group</label>
+                    <select id="settleGroupSelect" required onchange="handleSettleGroupChange()"></select>
+                </div>
+
+                <div class="modal-form-group">
+                    <label for="settleToUser">You are paying</label>
+                    <select id="settleToUser" required></select>
+                </div>
+
+                <div class="modal-form-group">
+                    <label for="settleAmount">Amount</label>
+                    <div class="amount-input-box">
+                        <span>₹</span>
+                        <input type="number" step="0.01" min="0.01" id="settleAmount" placeholder="0.00" required>
+                    </div>
+                </div>
+
+                <div id="onlinePaymentNotice" style="font-size: 12px; color: #059669; background: #ecfdf5; padding: 10px; border-radius: 4px; border: 1px solid #a7f3d0; margin-top: 10px;">
+                    ✨ <strong>Direct In-App Web Payment:</strong> You will be able to scan dynamic UPI QR code or pay via Card/UPI app. Upon payment, your debt will be cleared instantly in the database!
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn-modal-cancel" onclick="closeModal('settleModal')">Cancel</button>
+                <button type="button" id="btnSettleSubmit" class="btn-direct-pay" onclick="handleSettleChoice()">⚡ Pay Online Directly</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= MODAL: DIRECT CHECKOUT (UPI QR & CARD) ================= -->
+    <div class="modal-overlay" id="directCheckoutModal">
+        <div class="modal-box" style="max-width: 460px;">
+            <div class="modal-header-teal">
+                <h3>Direct Web Checkout</h3>
+                <button class="modal-close-btn" onclick="closeModal('directCheckoutModal')">&times;</button>
+            </div>
+
+            <div class="modal-body">
+                <div style="text-align: center; margin-bottom: 15px;">
+                    <div style="font-size: 13px; color: #666;">Paying directly to <strong id="checkoutRecipientName">Friend</strong></div>
+                    <div style="font-size: 28px; font-weight: 800; color: #1CC29F; margin-top: 4px;" id="checkoutAmountDisplay">₹0.00</div>
+                    <div style="font-size: 11px; color: #999; font-family: monospace;" id="checkoutTxnId">TXN_ID</div>
+                </div>
+
+                <!-- Payment Method Toggle -->
+                <div class="payment-method-selector">
+                    <button type="button" class="method-btn active" id="btnMethodUPI" onclick="switchCheckoutMethod('UPI')">📲 UPI (GPay / PhonePe / Paytm)</button>
+                    <button type="button" class="method-btn" id="btnMethodCard" onclick="switchCheckoutMethod('CARD')">💳 Online Card / NetBanking</button>
+                </div>
+
+                <!-- UPI VIEW -->
+                <div id="checkoutUPIView">
+                    <div class="qr-card">
+                        <div style="font-size: 12px; font-weight: 700; color: #555;">Scan QR code using any UPI App</div>
+                        <img id="checkoutQRCodeImg" src="" alt="UPI QR Code">
+                        <div style="font-size: 12px; color: #666;">
+                            UPI ID: <strong id="checkoutUpiIdText">user@upi</strong>
+                        </div>
+                    </div>
+                    <div style="text-align: center; margin-bottom: 10px;">
+                        <a href="#" id="checkoutUpiAppLink" class="btn-modal-save" style="display: inline-block; text-decoration: none; padding: 8px 16px; font-size: 13px;">📲 Pay with UPI App</a>
+                    </div>
+                </div>
+
+                <!-- CARD VIEW -->
+                <div id="checkoutCardView" style="display: none;">
+                    <div style="background: #fdfdfd; border: 1px solid #e0e0e0; border-radius: 6px; padding: 15px; margin-bottom: 15px;">
+                        <div class="modal-form-group">
+                            <label>Card Number</label>
+                            <input type="text" id="testCardNumber" placeholder="4111 •••• •••• 1111" value="4111 2222 3333 4444">
+                        </div>
+                        <div style="display: flex; gap: 10px;">
+                            <div class="modal-form-group" style="flex: 1;">
+                                <label>Expiry Date</label>
+                                <input type="text" id="testCardExpiry" placeholder="MM/YY" value="12/28">
+                            </div>
+                            <div class="modal-form-group" style="flex: 1;">
+                                <label>CVV</label>
+                                <input type="password" id="testCardCvv" placeholder="•••" value="123">
+                            </div>
+                        </div>
+                        <p style="font-size: 11px; color: #888;">* Test direct web transaction processed instantly.</p>
+                    </div>
+                </div>
+
+                <div style="background: #f8fafc; padding: 10px; border-radius: 4px; border: 1px solid #e2e8f0; font-size: 12px; color: #64748b; text-align: center;">
+                    After completing the payment on your device, click below to confirm.
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn-modal-cancel" onclick="closeModal('directCheckoutModal')">Cancel</button>
+                <button type="button" class="btn-modal-save" onclick="confirmDirectPayment()">✓ Confirm & Complete Payment</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= MODAL: PAYMENT RECEIPT ================= -->
+    <div class="modal-overlay" id="paymentReceiptModal">
+        <div class="modal-box" style="max-width: 420px;">
+            <div class="modal-body receipt-card">
+                <div class="receipt-check-circle">✓</div>
+                <h3 style="font-size: 20px; font-weight: 800; color: #059669;">Payment Successful!</h3>
+                <p style="font-size: 13px; color: #666; margin-top: 4px;">Debt has been settled and recorded in the database.</p>
+
+                <table class="receipt-details-table">
+                    <tr>
+                        <td style="color: #888;">Transaction ID</td>
+                        <td id="receiptTxnId" style="font-family: monospace;">TXN_123456</td>
+                    </tr>
+                    <tr>
+                        <td style="color: #888;">Paid To</td>
+                        <td id="receiptRecipient">Friend</td>
+                    </tr>
+                    <tr>
+                        <td style="color: #888;">Amount Paid</td>
+                        <td id="receiptAmount" style="color: #1CC29F; font-size: 16px;">₹0.00</td>
+                    </tr>
+                    <tr>
+                        <td style="color: #888;">Payment Method</td>
+                        <td id="receiptMethod">UPI</td>
+                    </tr>
+                    <tr>
+                        <td style="color: #888;">Status</td>
+                        <td style="color: #059669;">COMPLETED</td>
+                    </tr>
+                </table>
+
+                <div style="margin-top: 20px;">
+                    <button type="button" class="btn-modal-save" style="width: 100%;" onclick="closeModal('paymentReceiptModal')">Done & View Updated Balances</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= MODAL: ADD MEMBER ================= -->
+    <div class="modal-overlay" id="addMemberModal">
+        <div class="modal-box">
+            <div class="modal-header-teal">
+                <h3>Add member to group</h3>
+                <button class="modal-close-btn" onclick="closeModal('addMemberModal')">&times;</button>
+            </div>
+            <form onsubmit="handleAddMember(event)">
+                <div class="modal-body">
+                    <div class="modal-form-group">
+                        <label for="newMemberEmail">Email address</label>
+                        <input type="email" id="newMemberEmail" placeholder="friend@example.com" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-modal-cancel" onclick="closeModal('addMemberModal')">Cancel</button>
+                    <button type="submit" class="btn-modal-save">Add friend</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ================= MODAL: MY PROFILE ================= -->
+    <div class="modal-overlay" id="profileModal">
+        <div class="modal-box" style="max-width: 440px;">
+            <div class="modal-header-teal">
+                <h3>My Profile</h3>
+                <button class="modal-close-btn" onclick="closeModal('profileModal')">&times;</button>
+            </div>
+            <form onsubmit="handleUpdateProfile(event)">
+                <div class="modal-body">
+                    <div style="text-align: center; margin-bottom: 20px;">
+                        <div class="user-avatar-circle" id="profileAvatarLarge" style="width: 64px; height: 64px; font-size: 26px; margin: 0 auto 10px auto; background: var(--splitwise-teal); color: white; border: 3px solid #e0f2fe;">U</div>
+                        <h4 id="profileNameHeading" style="font-size: 18px; color: #333;">User Name</h4>
+                        <p id="profileEmailDisplay" style="font-size: 13px; color: #777;">user@example.com</p>
+                    </div>
+
+                    <div id="profileAlert" style="display: none; padding: 10px; border-radius: 4px; font-size: 13px; margin-bottom: 12px;"></div>
+
+                    <div class="modal-form-group">
+                        <label for="profileNameInput">Full Name</label>
+                        <input type="text" id="profileNameInput" placeholder="Your Name" required>
+                    </div>
+
+                    <div class="modal-form-group">
+                        <label for="profileUpiInput">UPI ID (for receiving web payments)</label>
+                        <input type="text" id="profileUpiInput" placeholder="e.g. yourname@okhdfcbank or 9876543210@paytm">
+                        <span style="font-size: 11px; color: #888;">Friends can scan QR code to pay this UPI ID directly.</span>
+                    </div>
+
+                    <div class="modal-form-group">
+                        <label for="profilePhoneInput">Phone Number (optional)</label>
+                        <input type="text" id="profilePhoneInput" placeholder="+91 98765 43210">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-modal-cancel" onclick="closeModal('profileModal')">Close</button>
+                    <button type="submit" id="btnSaveProfile" class="btn-modal-save">Save Profile</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ================= JAVASCRIPT ================= -->
+    <script>
+        const token = localStorage.getItem("splitwise_token");
+        let currentUser = null;
+        let groups = [];
+        let selectedGroup = null; // null = global dashboard
+        let viewMode = "dashboard"; // "dashboard", "all_expenses", "group"
+
+        window.addEventListener("DOMContentLoaded", async () => {
+            if (!token) {
+                window.location.href = "/userPage";
+                return;
+            }
+
+            try {
+                // Fetch current user
+                const res = await fetch("/api/users/me", {
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+                if (!res.ok) throw new Error("Invalid session");
+                currentUser = await res.json();
+
+                document.getElementById("navUserName").textContent = currentUser.name;
+                document.getElementById("navUserAvatar").textContent = (currentUser.name || "U")[0].toUpperCase();
+
+                await loadGroups();
+                switchToDashboard();
+            } catch (err) {
+                logout();
+            }
+        });
+
+        function logout() {
+            localStorage.removeItem("splitwise_token");
+            localStorage.removeItem("splitwise_user");
+            window.location.href = "/userPage";
+        }
+
+        // PROFILE MODAL HANDLERS
+        function openProfileModal() {
+            if (!currentUser) return;
+            document.getElementById("profileNameInput").value = currentUser.name || "";
+            document.getElementById("profileEmailDisplay").textContent = currentUser.email || "";
+            document.getElementById("profileUpiInput").value = currentUser.upiId || "";
+            document.getElementById("profilePhoneInput").value = currentUser.phone || "";
+            document.getElementById("profileNameHeading").textContent = currentUser.name || "User";
+            document.getElementById("profileAvatarLarge").textContent = (currentUser.name || "U")[0].toUpperCase();
+            document.getElementById("profileAlert").style.display = "none";
+            openModal("profileModal");
+        }
+
+        async function handleUpdateProfile(e) {
+            e.preventDefault();
+            const submitBtn = document.getElementById("btnSaveProfile");
+            const name = document.getElementById("profileNameInput").value.trim();
+            const upiId = document.getElementById("profileUpiInput").value.trim();
+            const phone = document.getElementById("profilePhoneInput").value.trim();
+            const alertBox = document.getElementById("profileAlert");
+
+            if (!name) {
+                alertBox.textContent = "Name is required.";
+                alertBox.style.background = "#fee2e2";
+                alertBox.style.color = "#dc2626";
+                alertBox.style.display = "block";
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = "Saving...";
+
+            try {
+                const res = await fetch("/api/users/profile", {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ name, upiId, phone })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.message || "Failed to update profile");
+
+                currentUser = { ...currentUser, ...data.user };
+                localStorage.setItem("splitwise_user", JSON.stringify(currentUser));
+
+                // Update UI elements with new profile name and avatar
+                document.getElementById("navUserName").textContent = currentUser.name;
+                document.getElementById("navUserAvatar").textContent = (currentUser.name || "U")[0].toUpperCase();
+                document.getElementById("profileNameHeading").textContent = currentUser.name;
+
+                alertBox.textContent = "✓ Profile updated successfully!";
+                alertBox.style.background = "#dcfce7";
+                alertBox.style.color = "#16a34a";
+                alertBox.style.display = "block";
+
+                setTimeout(() => {
+                    closeModal("profileModal");
+                }, 800);
+            } catch (err) {
+                alertBox.textContent = err.message;
+                alertBox.style.background = "#fee2e2";
+                alertBox.style.color = "#dc2626";
+                alertBox.style.display = "block";
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = "Save Profile";
+            }
+        }
+
+        // LOAD GROUPS
+        async function loadGroups() {
+            try {
+                const res = await fetch("/api/groups", {
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+                groups = await res.json();
+                renderLeftGroups();
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function renderLeftGroups() {
+            const container = document.getElementById("leftGroupsList");
+            if (groups.length === 0) {
+                container.innerHTML = `<div style="padding: 6px 16px; font-size: 12px; color: #999;">No groups yet</div>`;
+                return;
+            }
+
+            container.innerHTML = groups.map(g => `
+                <div class="group-nav-item ${selectedGroup && selectedGroup._id === g._id ? 'active' : ''}" onclick="selectGroup('${g._id}')">
+                    <span class="group-icon-bullet">🏷️</span>
+                    <span>${escapeHtml(g.name)}</span>
+                </div>
+            `).join("");
+        }
+
+        // SWITCH VIEWS
+        function switchToDashboard() {
+            viewMode = "dashboard";
+            selectedGroup = null;
+
+            document.getElementById("menuDashboard").classList.add("active");
+            document.getElementById("menuAllExpenses").classList.remove("active");
+            renderLeftGroups();
+
+            document.getElementById("centerTitle").textContent = "Dashboard";
+            document.getElementById("centerSubtitle").textContent = "Overview of all your group balances";
+            document.getElementById("rightSectionTitle").textContent = "YOUR BALANCES";
+            document.getElementById("rightGroupActions").style.display = "none";
+            document.getElementById("balancesSummaryRow").style.display = "grid";
+
+            loadDashboardOverview();
+        }
+
+        function switchToAllExpenses() {
+            viewMode = "all_expenses";
+            selectedGroup = null;
+
+            document.getElementById("menuDashboard").classList.remove("active");
+            document.getElementById("menuAllExpenses").classList.add("active");
+            renderLeftGroups();
+
+            document.getElementById("centerTitle").textContent = "All expenses";
+            document.getElementById("centerSubtitle").textContent = "All expenses across all your groups";
+            document.getElementById("rightSectionTitle").textContent = "TOTAL SUMMARY";
+            document.getElementById("rightGroupActions").style.display = "none";
+            document.getElementById("balancesSummaryRow").style.display = "none";
+
+            loadAllExpenses();
+        }
+
+        async function selectGroup(groupId) {
+            viewMode = "group";
+            selectedGroup = groups.find(g => g._id === groupId);
+            if (!selectedGroup) return;
+
+            document.getElementById("menuDashboard").classList.remove("active");
+            document.getElementById("menuAllExpenses").classList.remove("active");
+            renderLeftGroups();
+
+            document.getElementById("centerTitle").innerHTML = `🏷️ ${escapeHtml(selectedGroup.name)}`;
+            document.getElementById("centerSubtitle").textContent = `${selectedGroup.members ? selectedGroup.members.length : 0} members in group`;
+            document.getElementById("rightSectionTitle").textContent = "GROUP BALANCES";
+            document.getElementById("rightGroupActions").style.display = "block";
+            document.getElementById("balancesSummaryRow").style.display = "grid";
+
+            // Render members in left sidebar
+            const friendsList = document.getElementById("leftFriendsList");
+            friendsList.innerHTML = (selectedGroup.members || []).map(m => `
+                <div style="padding: 4px 16px; font-size: 12px; color: #555; display: flex; align-items: center; gap: 6px;">
+                    <span>👤</span>
+                    <span>${escapeHtml(m.name)} ${m._id === currentUser._id ? '(you)' : ''}</span>
+                </div>
+            `).join("");
+
+            await loadGroupDetails(groupId);
+        }
+
+        // LOAD DASHBOARD DATA
+        async function loadDashboardOverview() {
+            let totalOwe = 0;
+            let totalOwed = 0;
+            let allBalances = [];
+
+            const feedContainer = document.getElementById("feedContainer");
+            feedContainer.innerHTML = `<div style="padding: 20px; text-align: center; color: #888;">Calculating your total balances...</div>`;
+
+            for (const group of groups) {
+                try {
+                    const res = await fetch(`/api/expenses/group/${group._id}/balances`, {
+                        headers: { "Authorization": `Bearer ${token}` }
+                    });
+                    const balances = await res.json();
+                    if (Array.isArray(balances)) {
+                        const myBalObj = balances.find(b => b.user && b.user._id === currentUser._id);
+                        if (myBalObj) {
+                            if (myBalObj.balance > 0) totalOwed += myBalObj.balance;
+                            if (myBalObj.balance < 0) totalOwe += Math.abs(myBalObj.balance);
+                            allBalances.push({
+                                groupName: group.name,
+                                balance: myBalObj.balance
+                            });
+                        }
+                    }
+                } catch (e) {}
+            }
+
+            const netTotal = totalOwed - totalOwe;
+            const totalBalEl = document.getElementById("summaryTotalBal");
+            totalBalEl.textContent = `${netTotal >= 0 ? '+' : '-'} ₹${Math.abs(netTotal).toFixed(2)}`;
+            totalBalEl.className = `summary-val ${netTotal > 0 ? 'val-positive' : (netTotal < 0 ? 'val-negative' : 'val-neutral')}`;
+
+            document.getElementById("summaryYouOwe").textContent = `₹${totalOwe.toFixed(2)}`;
+            document.getElementById("summaryYouAreOwed").textContent = `₹${totalOwed.toFixed(2)}`;
+
+            // Render right balances list
+            const rightList = document.getElementById("rightBalancesList");
+            if (allBalances.length === 0) {
+                rightList.innerHTML = `<p style="color: #999;">You do not owe anything and no one owes you.</p>`;
+            } else {
+                rightList.innerHTML = allBalances.map(item => `
+                    <div class="member-balance-item">
+                        <div class="member-avatar-mini">🏷️</div>
+                        <div class="member-info">
+                            <h5>${escapeHtml(item.groupName)}</h5>
+                            <p style="color: ${item.balance > 0 ? 'var(--splitwise-teal-dark)' : (item.balance < 0 ? 'var(--splitwise-orange)' : '#888')}; font-weight: 700;">
+                                ${item.balance > 0 ? 'you are owed ₹' + item.balance.toFixed(2) : (item.balance < 0 ? 'you owe ₹' + Math.abs(item.balance).toFixed(2) : 'settled up')}
+                            </p>
+                        </div>
+                    </div>
+                `).join("");
+            }
+
+            // Render recent expenses on center feed
+            await loadAllExpenses();
+        }
+
+        // LOAD ALL EXPENSES
+        async function loadAllExpenses() {
+            const feedContainer = document.getElementById("feedContainer");
+            let allExpenses = [];
+
+            for (const group of groups) {
+                try {
+                    const res = await fetch(`/api/expenses/group/${group._id}`, {
+                        headers: { "Authorization": `Bearer ${token}` }
+                    });
+                    const exp = await res.json();
+                    if (Array.isArray(exp)) {
+                        allExpenses.push(...exp.map(e => ({ ...e, groupName: group.name })));
+                    }
+                } catch (e) {}
+            }
+
+            allExpenses.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+            if (allExpenses.length === 0) {
+                feedContainer.innerHTML = `
+                    <div class="empty-feed">
+                        <h3>No expenses to show</h3>
+                        <p>You haven't added any expenses yet.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            renderExpensesFeed(allExpenses);
+        }
+
+        // LOAD GROUP DETAILS
+        async function loadGroupDetails(groupId) {
+            const feedContainer = document.getElementById("feedContainer");
+            feedContainer.innerHTML = `<div style="padding: 20px; text-align: center; color: #888;">Loading group expenses...</div>`;
+
+            try {
+                // Fetch group balances
+                const balRes = await fetch(`/api/expenses/group/${groupId}/balances`, {
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+                const balances = await balRes.json();
+
+                if (Array.isArray(balances)) {
+                    // Update top summary bar for this group
+                    const myBal = balances.find(b => b.user && b.user._id === currentUser._id);
+                    const net = myBal ? myBal.balance : 0;
+
+                    const totalBalEl = document.getElementById("summaryTotalBal");
+                    totalBalEl.textContent = `${net >= 0 ? '+' : '-'} ₹${Math.abs(net).toFixed(2)}`;
+                    totalBalEl.className = `summary-val ${net > 0 ? 'val-positive' : (net < 0 ? 'val-negative' : 'val-neutral')}`;
+
+                    document.getElementById("summaryYouOwe").textContent = net < 0 ? `₹${Math.abs(net).toFixed(2)}` : "₹0.00";
+                    document.getElementById("summaryYouAreOwed").textContent = net > 0 ? `₹${net.toFixed(2)}` : "₹0.00";
+
+                    // Render right sidebar
+                    const rightList = document.getElementById("rightBalancesList");
+                    rightList.innerHTML = balances.map(b => {
+                        const isYou = b.user && b.user._id === currentUser._id;
+                        const name = b.user ? (isYou ? "You" : b.user.name) : "Unknown";
+                        const bal = b.balance;
+                        let text = "";
+                        let color = "#888";
+
+                        if (bal > 0) {
+                            text = `gets back ₹${bal.toFixed(2)}`;
+                            color = "var(--splitwise-teal-dark)";
+                        } else if (bal < 0) {
+                            text = `owes ₹${Math.abs(bal).toFixed(2)}`;
+                            color = "var(--splitwise-orange)";
+                        } else {
+                            text = "settled up";
+                        }
+
+                        return `
+                            <div class="member-balance-item">
+                                <div class="member-avatar-mini">${name[0].toUpperCase()}</div>
+                                <div class="member-info">
+                                    <h5>${escapeHtml(name)}</h5>
+                                    <p style="color: ${color}; font-weight: 700;">${text}</p>
+                                </div>
+                            </div>
+                        `;
+                    }).join("");
+                }
+
+                // Fetch group expenses
+                const expRes = await fetch(`/api/expenses/group/${groupId}`, {
+                    headers: { "Authorization": `Bearer ${token}` }
+                });
+                const expenses = await expRes.json();
+
+                if (Array.isArray(expenses) && expenses.length > 0) {
+                    renderExpensesFeed(expenses);
+                } else {
+                    feedContainer.innerHTML = `
+                        <div class="empty-feed">
+                            <h3>No expenses yet</h3>
+                            <p>Click "Add an expense" above to add the first bill to this group!</p>
+                        </div>
+                    `;
+                }
+            } catch (err) {
+                feedContainer.innerHTML = `<div style="padding:20px; color:red;">${err.message}</div>`;
+            }
+        }
+
+        // RENDER EXPENSES FEED
+        function renderExpensesFeed(expenses) {
+            const feedContainer = document.getElementById("feedContainer");
+            const months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+
+            feedContainer.innerHTML = expenses.map(exp => {
+                const dateObj = new Date(exp.createdAt);
+                const monthStr = months[dateObj.getMonth()];
+                const dayStr = String(dateObj.getDate()).padStart(2, "0");
+
+                const isPayer = exp.paidBy && exp.paidBy._id === currentUser._id;
+                const payerName = isPayer ? "you" : (exp.paidBy ? exp.paidBy.name : "Someone");
+
+                // Calculate current user's share
+                let myShare = 0;
+                if (exp.splits) {
+                    const mySplit = exp.splits.find(s => s.user && (s.user._id === currentUser._id || s.user === currentUser._id));
+                    if (mySplit) myShare = mySplit.amount;
+                }
+
+                let shareText = "";
+                let shareAmount = "";
+                let shareColor = "";
+
+                if (isPayer) {
+                    const lentAmount = exp.amount - myShare;
+                    shareText = "you lent";
+                    shareAmount = `+ ₹${lentAmount.toFixed(2)}`;
+                    shareColor = "var(--splitwise-teal-dark)";
+                } else if (myShare > 0) {
+                    shareText = "you borrowed";
+                    shareAmount = `- ₹${myShare.toFixed(2)}`;
+                    shareColor = "var(--splitwise-orange)";
+                } else {
+                    shareText = "not involved";
+                    shareAmount = "₹0.00";
+                    shareColor = "#999";
+                }
+
+                return `
+                    <div class="expense-row">
+                        <div class="expense-left">
+                            <div class="date-badge">
+                                <div class="date-month">${monthStr}</div>
+                                <div class="date-day">${dayStr}</div>
+                            </div>
+                            <div class="category-icon">🧾</div>
+                            <div class="expense-desc-box">
+                                <h4>${escapeHtml(exp.description)}</h4>
+                                <p>${exp.groupName ? '<strong>' + escapeHtml(exp.groupName) + '</strong> • ' : ''}paid by ${escapeHtml(payerName)}</p>
+                            </div>
+                        </div>
+
+                        <div class="expense-right">
+                            <div class="payer-column">
+                                ${escapeHtml(payerName)} paid
+                                <strong>₹${Number(exp.amount).toFixed(2)}</strong>
+                            </div>
+                            <div class="share-column">
+                                <span style="color: #888;">${shareText}</span>
+                                <strong style="color: ${shareColor};">${shareAmount}</strong>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join("");
+        }
+
+        // ================= MODAL ACTIONS =================
+        function openModal(id) {
+            document.getElementById(id).style.display = "flex";
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).style.display = "none";
+        }
+
+        function openAddExpense() {
+            if (groups.length === 0) {
+                alert("Please create a group first before adding an expense!");
+                openModal("createGroupModal");
+                return;
+            }
+
+            const groupSelect = document.getElementById("expenseGroupSelect");
+            groupSelect.innerHTML = groups.map(g => `
+                <option value="${g._id}" ${selectedGroup && selectedGroup._id === g._id ? 'selected' : ''}>${escapeHtml(g.name)}</option>
+            `).join("");
+
+            handleExpenseGroupChange();
+            openModal("addExpenseModal");
+        }
+
+        function handleExpenseGroupChange() {
+            const groupId = document.getElementById("expenseGroupSelect").value;
+            const group = groups.find(g => g._id === groupId);
+            const paidBySelect = document.getElementById("expensePaidBy");
+
+            if (!group || !group.members || group.members.length === 0) {
+                const myId = currentUser ? (currentUser._id || currentUser.id) : '';
+                paidBySelect.innerHTML = `<option value="${myId}">you</option>`;
+                return;
+            }
+
+            const currentUserId = currentUser ? String(currentUser._id || currentUser.id) : '';
+
+            paidBySelect.innerHTML = group.members.map(m => {
+                const memberId = m._id || (typeof m === 'object' ? m.toString() : m);
+                const isYou = String(memberId) === currentUserId;
+                const memberName = isYou ? "you" : (m.name || (m.email ? m.email.split("@")[0] : "Member"));
+                return `<option value="${memberId}" ${isYou ? 'selected' : ''}>${escapeHtml(memberName)} ${isYou ? '(you)' : ''}</option>`;
+            }).join("");
+        }
+
+        function openSettleUp() {
+            if (groups.length === 0) {
+                alert("Please create a group first!");
+                return;
+            }
+
+            const groupSelect = document.getElementById("settleGroupSelect");
+            groupSelect.innerHTML = groups.map(g => `
+                <option value="${g._id}" ${selectedGroup && selectedGroup._id === g._id ? 'selected' : ''}>${escapeHtml(g.name)}</option>
+            `).join("");
+
+            handleSettleGroupChange();
+            openModal("settleModal");
+        }
+
+        function handleSettleGroupChange() {
+            const groupId = document.getElementById("settleGroupSelect").value;
+            const group = groups.find(g => g._id === groupId);
+            const toSelect = document.getElementById("settleToUser");
+
+            if (!group || !group.members) {
+                toSelect.innerHTML = "";
+                return;
+            }
+
+            const currentUserId = currentUser ? String(currentUser._id || currentUser.id) : '';
+
+            toSelect.innerHTML = group.members
+                .filter(m => {
+                    const memberId = m._id || m;
+                    return String(memberId) !== currentUserId;
+                })
+                .map(m => {
+                    const memberId = m._id || m;
+                    const memberName = m.name || (m.email ? m.email.split("@")[0] : "Friend");
+                    return `<option value="${memberId}">${escapeHtml(memberName)}</option>`;
+                })
+                .join("");
+        }
+
+        // CREATE GROUP HANDLER
+        async function handleCreateGroup(e) {
+            e.preventDefault();
+            const nameInput = document.getElementById("newGroupName");
+            const name = nameInput.value.trim();
+            if (!name) return;
+
+            try {
+                const res = await fetch("/api/groups", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ name })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.message || "Failed to create group");
+
+                nameInput.value = "";
+                closeModal("createGroupModal");
+                await loadGroups();
+                if (data.group) selectGroup(data.group._id);
+            } catch (err) {
+                alert(err.message);
+            }
+        }
+
+        // ADD EXPENSE HANDLER
+        async function handleAddExpense(e) {
+            e.preventDefault();
+            const submitBtn = e.target.querySelector("button[type='submit']");
+            const groupId = document.getElementById("expenseGroupSelect").value;
+            const description = document.getElementById("expenseDesc").value.trim();
+            const amount = Number(document.getElementById("expenseAmount").value);
+            const paidBy = document.getElementById("expensePaidBy").value;
+
+            if (!groupId) {
+                alert("Please select a group for this expense.");
+                return;
+            }
+            if (!description) {
+                alert("Please enter a description for the expense.");
+                return;
+            }
+            if (!amount || isNaN(amount) || amount <= 0) {
+                alert("Please enter a valid positive amount.");
+                return;
+            }
+
+            const currentUserId = currentUser ? (currentUser._id || currentUser.id) : '';
+            const finalPaidBy = (paidBy && paidBy !== "undefined" && paidBy !== "null") ? paidBy : currentUserId;
+
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.textContent = "Adding...";
+            }
+
+            try {
+                const res = await fetch("/api/expenses", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        description,
+                        amount,
+                        groupId,
+                        paidBy: finalPaidBy
+                    })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.message || "Failed to add expense");
+
+                document.getElementById("expenseDesc").value = "";
+                document.getElementById("expenseAmount").value = "";
+                closeModal("addExpenseModal");
+
+                // Refresh data and view
+                await loadGroups();
+                if (selectedGroup && selectedGroup._id === groupId) {
+                    await loadGroupDetails(groupId);
+                } else if (viewMode === "all_expenses") {
+                    await loadAllExpenses();
+                } else {
+                    selectGroup(groupId);
+                }
+            } catch (err) {
+                alert("Could not add expense: " + err.message);
+            } finally {
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = "Save";
+                }
+            }
+        }
+
+        // ================= DIRECT ONLINE PAYMENT LOGIC =================
+        let settleMode = "online"; // "online" or "cash"
+        let currentPaymentOrder = null;
+        let selectedCheckoutMethod = "UPI"; // "UPI" or "CARD"
+
+        function switchSettleMode(mode) {
+            settleMode = mode;
+            const btnOnline = document.getElementById("tabDirectOnlineBtn");
+            const btnCash = document.getElementById("tabOfflineCashBtn");
+            const notice = document.getElementById("onlinePaymentNotice");
+            const submitBtn = document.getElementById("btnSettleSubmit");
+
+            if (mode === "online") {
+                btnOnline.classList.add("active");
+                btnCash.classList.remove("active");
+                notice.style.display = "block";
+                submitBtn.textContent = "⚡ Pay Online Directly";
+                submitBtn.className = "btn-direct-pay";
+            } else {
+                btnOnline.classList.remove("active");
+                btnCash.classList.add("active");
+                notice.style.display = "none";
+                submitBtn.textContent = "Record Cash Payment";
+                submitBtn.className = "btn-modal-save";
+            }
+        }
+
+        function handleSettleChoice() {
+            if (settleMode === "online") {
+                initiateDirectPayment();
+            } else {
+                handleRecordCashPayment();
+            }
+        }
+
+        // INITIATE DIRECT ONLINE PAYMENT
+        async function initiateDirectPayment() {
+            const groupId = document.getElementById("settleGroupSelect").value;
+            const to = document.getElementById("settleToUser").value;
+            const amount = Number(document.getElementById("settleAmount").value);
+
+            if (!to || !amount || amount <= 0) {
+                alert("Please select recipient and enter a valid amount");
+                return;
+            }
+
+            try {
+                const res = await fetch("/api/payments/create-order", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        groupId,
+                        to,
+                        amount,
+                        paymentMethod: selectedCheckoutMethod
+                    })
+                });
+
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.message || "Failed to initiate payment");
+
+                currentPaymentOrder = data;
+
+                // Populate Checkout Modal
+                document.getElementById("checkoutRecipientName").textContent = data.recipient.name;
+                document.getElementById("checkoutAmountDisplay").textContent = `₹${data.amount.toFixed(2)}`;
+                document.getElementById("checkoutTxnId").textContent = data.transactionId;
+                document.getElementById("checkoutQRCodeImg").src = data.qrCodeUrl;
+                document.getElementById("checkoutUpiIdText").textContent = data.recipient.upiId;
+                document.getElementById("checkoutUpiAppLink").href = data.upiUri;
+
+                closeModal("settleModal");
+                openModal("directCheckoutModal");
+            } catch (err) {
+                alert(err.message);
+            }
+        }
+
+        function switchCheckoutMethod(method) {
+            selectedCheckoutMethod = method;
+            const btnUpi = document.getElementById("btnMethodUPI");
+            const btnCard = document.getElementById("btnMethodCard");
+            const upiView = document.getElementById("checkoutUPIView");
+            const cardView = document.getElementById("checkoutCardView");
+
+            if (method === "UPI") {
+                btnUpi.classList.add("active");
+                btnCard.classList.remove("active");
+                upiView.style.display = "block";
+                cardView.style.display = "none";
+            } else {
+                btnUpi.classList.remove("active");
+                btnCard.classList.add("active");
+                upiView.style.display = "none";
+                cardView.style.display = "block";
+            }
+        }
+
+        // CONFIRM DIRECT ONLINE PAYMENT
+        async function confirmDirectPayment() {
+            if (!currentPaymentOrder) return;
+
+            try {
+                const res = await fetch("/api/payments/confirm", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        transactionId: currentPaymentOrder.transactionId,
+                        paymentMethod: selectedCheckoutMethod
+                    })
+                });
+
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.message || "Failed to confirm payment");
+
+                // Populate Receipt Modal
+                document.getElementById("receiptTxnId").textContent = currentPaymentOrder.transactionId;
+                document.getElementById("receiptRecipient").textContent = currentPaymentOrder.recipient.name;
+                document.getElementById("receiptAmount").textContent = `₹${currentPaymentOrder.amount.toFixed(2)}`;
+                document.getElementById("receiptMethod").textContent = selectedCheckoutMethod;
+
+                closeModal("directCheckoutModal");
+                openModal("paymentReceiptModal");
+
+                // Refresh Balances in real time
+                if (selectedGroup) {
+                    await loadGroupDetails(selectedGroup._id);
+                } else {
+                    await loadDashboardOverview();
+                }
+            } catch (err) {
+                alert(err.message);
+            }
+        }
+
+        // RECORD CASH / OFFLINE SETTLEMENT
+        async function handleRecordCashPayment() {
+            const groupId = document.getElementById("settleGroupSelect").value;
+            const to = document.getElementById("settleToUser").value;
+            const amount = Number(document.getElementById("settleAmount").value);
+
+            if (!to || !amount) {
+                alert("Please select recipient and amount");
+                return;
+            }
+
+            try {
+                const res = await fetch("/api/settlements", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ groupId, to, amount })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.message || "Failed to record settlement");
+
+                document.getElementById("settleAmount").value = "";
+                closeModal("settleModal");
+                alert("Cash payment recorded successfully!");
+
+                if (selectedGroup && selectedGroup._id === groupId) {
+                    await loadGroupDetails(groupId);
+                } else {
+                    selectGroup(groupId);
+                }
+            } catch (err) {
+                alert(err.message);
+            }
+        }
+
+        // ADD MEMBER HANDLER
+        async function handleAddMember(e) {
+            e.preventDefault();
+            if (!selectedGroup) return;
+
+            const emailInput = document.getElementById("newMemberEmail");
+            const email = emailInput.value.trim();
+
+            try {
+                const res = await fetch(`/api/groups/${selectedGroup._id}/members`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ email })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.message || "Failed to add member");
+
+                emailInput.value = "";
+                closeModal("addMemberModal");
+                alert("Friend added to group successfully!");
+                await loadGroups();
+                selectGroup(selectedGroup._id);
+            } catch (err) {
+                alert(err.message);
+            }
+        }
+
+        function escapeHtml(str) {
+            if (!str) return "";
+            const div = document.createElement("div");
+            div.textContent = str;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SplitEasy - Login & Sign Up</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #f0efff, #ffffff);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .auth-card {
+            width: 100%;
+            max-width: 440px;
+            background: #ffffff;
+            padding: 35px 30px;
+            border-radius: 18px;
+            box-shadow: 0 15px 35px rgba(108, 76, 255, 0.12);
+        }
+
+        .brand-header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .brand-header a {
+            text-decoration: none;
+            font-size: 26px;
+            font-weight: 800;
+            color: #6c4cff;
+        }
+
+        .brand-header p {
+            color: #777;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        .tabs {
+            display: flex;
+            border-radius: 10px;
+            background: #f1f0f7;
+            padding: 4px;
+            margin-bottom: 25px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            background: transparent;
+            font-size: 15px;
+            font-weight: 600;
+            color: #666;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .tab-btn.active {
+            background: #ffffff;
+            color: #6c4cff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1px solid #dcdbe5;
+            border-radius: 10px;
+            font-size: 15px;
+            outline: none;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        input:focus {
+            border-color: #6c4cff;
+            box-shadow: 0 0 0 3px rgba(108, 76, 255, 0.12);
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 13px;
+            border: none;
+            border-radius: 10px;
+            background: #6c4cff;
+            color: white;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background-color 0.2s ease, transform 0.1s ease;
+            margin-top: 10px;
+        }
+
+        .submit-btn:hover {
+            background: #5636eb;
+        }
+
+        .submit-btn:active {
+            transform: scale(0.99);
+        }
+
+        .submit-btn:disabled {
+            background: #b0a4eb;
+            cursor: not-allowed;
+        }
+
+        .alert-box {
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-bottom: 18px;
+            display: none;
+        }
+
+        .alert-error {
+            background: #ffebe9;
+            color: #cf222e;
+            border: 1px solid #ffc1ba;
+        }
+
+        .alert-success {
+            background: #dafbe1;
+            color: #1a7f37;
+            border: 1px solid #aceebb;
+        }
+
+        .footer-nav {
+            text-align: center;
+            margin-top: 25px;
+            font-size: 14px;
+            color: #777;
+        }
+
+        .footer-nav a {
+            color: #6c4cff;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .footer-nav a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-card">
+        <div class="brand-header">
+            <a href="/">SplitEasy</a>
+            <p>Effortless shared expense management</p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-btn active" id="tabLoginBtn" type="button" onclick="switchMode('login')">Log In</button>
+            <button class="tab-btn" id="tabSignupBtn" type="button" onclick="switchMode('signup')">Sign Up</button>
+        </div>
+
+        <div id="alertBox" class="alert-box"></div>
+
+        <!-- FORM -->
+        <form id="authForm" onsubmit="handleSubmit(event)">
+            <div class="form-group" id="nameGroup" style="display: none;">
+                <label for="name">Full Name</label>
+                <input type="text" id="name" placeholder="e.g. John Doe">
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" placeholder="name@example.com" required>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" placeholder="••••••••" required>
+            </div>
+
+            <button type="submit" id="submitBtn" class="submit-btn">Log In</button>
+        </form>
+
+        <div class="footer-nav">
+            <span id="switchPrompt">Don't have an account?</span>
+            <a href="javascript:void(0)" id="switchLink" onclick="toggleMode()">Sign up here</a>
+            <div style="margin-top: 15px;">
+                <a href="/">← Back to Home</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let mode = "login"; // "login" or "signup"
+
+        // If user is already logged in with valid token, redirect to dashboard
+        window.addEventListener("DOMContentLoaded", () => {
+            const token = localStorage.getItem("splitwise_token");
+            if (token) {
+                // Verify token by calling /api/users/me
+                fetch("/api/users/me", {
+                    headers: { "Authorization": `Bearer ${token}` }
+                })
+                .then(res => {
+                    if (res.ok) window.location.href = "/dashboard";
+                })
+                .catch(() => {});
+            }
+        });
+
+        function switchMode(newMode) {
+            mode = newMode;
+            const alertBox = document.getElementById("alertBox");
+            alertBox.style.display = "none";
+
+            const nameGroup = document.getElementById("nameGroup");
+            const nameInput = document.getElementById("name");
+            const submitBtn = document.getElementById("submitBtn");
+            const tabLoginBtn = document.getElementById("tabLoginBtn");
+            const tabSignupBtn = document.getElementById("tabSignupBtn");
+            const switchPrompt = document.getElementById("switchPrompt");
+            const switchLink = document.getElementById("switchLink");
+
+            if (mode === "signup") {
+                nameGroup.style.display = "block";
+                nameInput.required = true;
+                submitBtn.textContent = "Create Account";
+                tabLoginBtn.classList.remove("active");
+                tabSignupBtn.classList.add("active");
+                switchPrompt.textContent = "Already have an account?";
+                switchLink.textContent = "Log in here";
+            } else {
+                nameGroup.style.display = "none";
+                nameInput.required = false;
+                submitBtn.textContent = "Log In";
+                tabLoginBtn.classList.add("active");
+                tabSignupBtn.classList.remove("active");
+                switchPrompt.textContent = "Don't have an account?";
+                switchLink.textContent = "Sign up here";
+            }
+        }
+
+        function toggleMode() {
+            switchMode(mode === "login" ? "signup" : "login");
+        }
+
+        function showAlert(message, isSuccess = false) {
+            const alertBox = document.getElementById("alertBox");
+            alertBox.textContent = message;
+            alertBox.className = `alert-box ${isSuccess ? "alert-success" : "alert-error"}`;
+            alertBox.style.display = "block";
+        }
+
+        async function handleSubmit(e) {
+            e.preventDefault();
+            const submitBtn = document.getElementById("submitBtn");
+            const email = document.getElementById("email").value.trim();
+            const password = document.getElementById("password").value;
+            const name = document.getElementById("name").value.trim();
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = mode === "signup" ? "Creating account..." : "Logging in...";
+
+            try {
+                if (mode === "signup") {
+                    const res = await fetch("/api/auth/signup", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ name, email, password })
+                    });
+                    const data = await res.json();
+
+                    if (!res.ok) {
+                        throw new Error(data.message || "Failed to sign up");
+                    }
+
+                    showAlert("Account created! Logging in...", true);
+
+                    // Auto login after signup
+                    const loginRes = await fetch("/api/auth/login", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ email, password })
+                    });
+                    const loginData = await loginRes.json();
+                    if (loginRes.ok && loginData.token) {
+                        localStorage.setItem("splitwise_token", loginData.token);
+                        localStorage.setItem("splitwise_user", JSON.stringify(loginData.user));
+                        setTimeout(() => {
+                            window.location.href = "/dashboard";
+                        }, 800);
+                    } else {
+                        switchMode("login");
+                        showAlert("Please log in with your credentials", true);
+                    }
+                } else {
+                    const res = await fetch("/api/auth/login", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ email, password })
+                    });
+                    const data = await res.json();
+
+                    if (!res.ok) {
+                        throw new Error(data.message || "Invalid credentials");
+                    }
+
+                    showAlert("Login successful! Redirecting...", true);
+                    localStorage.setItem("splitwise_token", data.token);
+                    localStorage.setItem("splitwise_user", JSON.stringify(data.user));
+
+                    setTimeout(() => {
+                        window.location.href = "/dashboard";
+                    }, 500);
+                }
+            } catch (err) {
+                showAlert(err.message || "An unexpected error occurred");
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = mode === "signup" ? "Create Account" : "Log In";
+            }
+        }
+    </script>
+</body>
+</html>
