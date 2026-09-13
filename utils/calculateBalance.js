@@ -1,31 +1,44 @@
-const calculateBalances = (expenses, settlements = []) => {
+const calculateBalances = (expenses = [], settlements = []) => {
   const balances = {};
+
+  const getId = (val) => {
+    if (!val) return "";
+    if (typeof val === "object") {
+      return (val._id || val.id || val).toString();
+    }
+    return val.toString();
+  };
 
   // Expense balances
   for (const expense of expenses) {
-    const paidBy = expense.paidBy.toString();
+    const paidBy = getId(expense.paidBy);
+    if (!paidBy) continue;
 
     if (!balances[paidBy]) {
       balances[paidBy] = 0;
     }
 
-    balances[paidBy] += expense.amount;
+    balances[paidBy] += Number(expense.amount || 0);
 
-    for (const split of expense.splits) {
-      const userId = split.user.toString();
+    if (Array.isArray(expense.splits)) {
+      for (const split of expense.splits) {
+        const userId = getId(split.user);
+        if (!userId) continue;
 
-      if (!balances[userId]) {
-        balances[userId] = 0;
+        if (!balances[userId]) {
+          balances[userId] = 0;
+        }
+
+        balances[userId] -= Number(split.amount || 0);
       }
-
-      balances[userId] -= split.amount;
     }
   }
 
   // Settlement balances
   for (const settlement of settlements) {
-    const from = settlement.from.toString();
-    const to = settlement.to.toString();
+    const from = getId(settlement.from);
+    const to = getId(settlement.to);
+    if (!from || !to) continue;
 
     if (!balances[from]) {
       balances[from] = 0;
@@ -35,8 +48,9 @@ const calculateBalances = (expenses, settlements = []) => {
       balances[to] = 0;
     }
 
-    balances[from] += settlement.amount;
-    balances[to] -= settlement.amount;
+    const settleAmt = Number(settlement.amount || 0);
+    balances[from] += settleAmt;
+    balances[to] -= settleAmt;
   }
 
   return balances;

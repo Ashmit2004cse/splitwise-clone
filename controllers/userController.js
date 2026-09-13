@@ -1,16 +1,29 @@
-const User = require("../models/User");
+const { db } = require("../config/firebase");
 
+// GET MY PROFILE
 const getMyProfile = async (req, res) => {
   try {
-    const user = await User.findById(req.userId).select("-password");
+    const userDoc = await db
+      .collection("users")
+      .doc(req.userId)
+      .get();
 
-    if (!user) {
+    if (!userDoc.exists) {
       return res.status(404).json({
         message: "User not found",
       });
     }
 
-    res.json(user);
+    const userData = userDoc.data();
+
+    // Don't send password to frontend
+    const { password, ...user } = userData;
+
+    res.json({
+      _id: userDoc.id,
+      id: userDoc.id,
+      ...user,
+    });
   } catch (error) {
     res.status(500).json({
       message: error.message,
@@ -23,20 +36,58 @@ const searchUsers = async (req, res) => {
   try {
     const { query } = req.query;
 
-    const filter = {
-      _id: { $ne: req.userId },
-    };
+    let queryRef = db
+      .collection("users")
+      .limit(20);
 
+    // If search query exists, search by name/email
     if (query) {
-      filter.$or = [
-        { name: { $regex: query, $options: "i" } },
-        { email: { $regex: query, $options: "i" } },
-      ];
+      const searchQuery = query.toLowerCase();
+
+      const snapshot = await db
+        .collection("users")
+        .limit(100)
+        .get();
+
+      const users = snapshot.docs
+        .map((doc) => {
+          const data = doc.data();
+
+          return {
+            _id: doc.id,
+            id: doc.id,
+            name: data.name || "",
+            email: data.email || "",
+          };
+        })
+        .filter((user) => {
+          if (user.id === req.userId) return false;
+
+          return (
+            user.name.toLowerCase().includes(searchQuery) ||
+            user.email.toLowerCase().includes(searchQuery)
+          );
+        })
+        .slice(0, 20);
+
+      return res.json(users);
     }
 
-    const users = await User.find(filter)
-      .select("name email")
-      .limit(20);
+    // List users when no search query
+    const snapshot = await queryRef.get();
+
+    const users = snapshot.docs
+      .map((doc) => {
+        const data = doc.data();
+
+        return {
+          _id: doc.id,
+          id: doc.id,
+          name: data.name || "",
+          email: data.email || "",
+        };
+      })
+      .filter((user) => user.id !== req.userId);
 
     res.json(users);
   } catch (error) {
@@ -51,30 +102,53 @@ const updateProfile = async (req, res) => {
   try {
     const { name, upiId, phone } = req.body;
 
-    const user = await User.findById(req.userId);
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
+    const userRef = db
+      .collection("users")
+      .doc(req.userId);
+
+    const userDoc = await userRef.get();
+
+    if (!userDoc.exists) {
+      return res.status(404).json({
+        message: "User not found",
+      });
     }
 
-    if (name && name.trim()) user.name = name.trim();
-    if (upiId !== undefined) user.upiId = upiId.trim();
-    if (phone !== undefined) user.phone = phone.trim();
+    const updateData = {};
 
-    await user.save();
+    if (name && name.trim()) {
+      updateData.name = name.trim();
+    }
+
+    if (upiId !== undefined) {
+      updateData.upiId = upiId.trim();
+    }
+
+    if (phone !== undefined) {
+      updateData.phone = phone.trim();
+    }
+
+    await userRef.update(updateData);
+
+    // Get updated user
+    const updatedDoc = await userRef.get();
+    const updatedUser = updatedDoc.data();
 
     res.json({
       message: "Profile updated successfully",
       user: {
-        _id: user._id,
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        upiId: user.upiId || "",
-        phone: user.phone || "",
+        _id: updatedDoc.id,
+        id: updatedDoc.id,
+        name: updatedUser.name || "",
+        email: updatedUser.email || "",
+        upiId: updatedUser.upiId || "",
+        phone: updatedUser.phone || "",
       },
     });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({
+      message: error.message,
+    });
   }
 };
 
@@ -83,3 +157,4 @@ module.exports = {
   searchUsers,
   updateProfile,
 };
+

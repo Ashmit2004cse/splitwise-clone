@@ -731,6 +731,71 @@
             color: var(--splitwise-teal-dark);
         }
 
+        .upi-apps-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .upi-app-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 700;
+            text-decoration: none;
+            transition: transform 0.15s, box-shadow 0.15s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            border: 1px solid transparent;
+            cursor: pointer;
+        }
+
+        .upi-app-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.12);
+        }
+
+        .upi-phonepe {
+            background: #5f259f;
+            color: white !important;
+        }
+
+        .upi-gpay {
+            background: #ffffff;
+            color: #1f2937 !important;
+            border: 1px solid #d1d5db;
+        }
+
+        .upi-paytm {
+            background: #002970;
+            color: white !important;
+        }
+
+        .upi-bhim {
+            background: #00796b;
+            color: white !important;
+        }
+
+        .btn-copy-mini {
+            background: #e2e8f0;
+            border: none;
+            padding: 3px 9px;
+            border-radius: 4px;
+            font-size: 11px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #334155;
+            transition: background 0.15s;
+        }
+
+        .btn-copy-mini:hover {
+            background: #cbd5e1;
+        }
+
         .receipt-card {
             text-align: center;
             padding: 10px 0;
@@ -1026,15 +1091,54 @@
 
                 <!-- UPI VIEW -->
                 <div id="checkoutUPIView">
-                    <div class="qr-card">
-                        <div style="font-size: 12px; font-weight: 700; color: #555;">Scan QR code using any UPI App</div>
-                        <img id="checkoutQRCodeImg" src="" alt="UPI QR Code">
-                        <div style="font-size: 12px; color: #666;">
-                            UPI ID: <strong id="checkoutUpiIdText">user@upi</strong>
+                    <!-- 1-Click Universal Auto-Launch -->
+                    <div style="background: linear-gradient(135deg, #f0fdf4, #e6fffa); border: 1px solid #10b981; border-radius: 8px; padding: 14px; margin-bottom: 14px; text-align: center;">
+                        <div style="font-size: 14px; font-weight: 800; color: #065f46; margin-bottom: 4px;">⚡ Pay Directly with UPI App</div>
+                        <p style="font-size: 12px; color: #047857; margin-bottom: 10px;">Tap below to automatically open your installed UPI app with amount & friend pre-filled:</p>
+                        
+                        <a href="#" id="checkoutMainAutoLaunchBtn" class="btn-direct-pay" style="justify-content: center; width: 100%; text-decoration: none; font-size: 15px; padding: 12px;">
+                            🚀 Open UPI App Now
+                        </a>
+                    </div>
+
+                    <!-- Direct App Selector -->
+                    <div style="margin-bottom: 15px;">
+                        <div style="font-size: 12px; font-weight: 700; color: #555; margin-bottom: 8px;">Or open your favorite app directly:</div>
+                        <div class="upi-apps-grid">
+                            <a href="#" id="btnLaunchPhonePe" class="upi-app-btn upi-phonepe" onclick="openSpecificUpi('phonepe', event)">
+                                <span>🟣</span>
+                                <span>PhonePe</span>
+                            </a>
+                            <a href="#" id="btnLaunchGPay" class="upi-app-btn upi-gpay" onclick="openSpecificUpi('gpay', event)">
+                                <span>🔵</span>
+                                <span>Google Pay</span>
+                            </a>
+                            <a href="#" id="btnLaunchPaytm" class="upi-app-btn upi-paytm" onclick="openSpecificUpi('paytm', event)">
+                                <span>🔷</span>
+                                <span>Paytm</span>
+                            </a>
+                            <a href="#" id="btnLaunchBhim" class="upi-app-btn upi-bhim" onclick="openSpecificUpi('universal', event)">
+                                <span>🟢</span>
+                                <span>Any UPI App</span>
+                            </a>
                         </div>
                     </div>
-                    <div style="text-align: center; margin-bottom: 10px;">
-                        <a href="#" id="checkoutUpiAppLink" class="btn-modal-save" style="display: inline-block; text-decoration: none; padding: 8px 16px; font-size: 13px;">📲 Pay with UPI App</a>
+
+                    <!-- Scan QR Code -->
+                    <div class="qr-card">
+                        <div style="font-size: 12px; font-weight: 700; color: #555;">Or Scan QR code from your phone</div>
+                        <img id="checkoutQRCodeImg" src="" alt="UPI QR Code">
+                        <div style="display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 12px; color: #666;">
+                            <span>UPI ID: <strong id="checkoutUpiIdText">user@upi</strong></span>
+                            <button type="button" class="btn-copy-mini" onclick="copyUpiId()" id="btnCopyUpi">📋 Copy</button>
+                        </div>
+                    </div>
+
+                    <!-- Return from UPI Notification Banner -->
+                    <div id="returnedFromUpiBanner" style="display: none; background: #ecfdf5; border: 1.5px solid #10b981; border-radius: 8px; padding: 12px; margin-top: 12px; text-align: center;">
+                        <div style="font-size: 13px; font-weight: 800; color: #065f46;">Returned from your UPI App?</div>
+                        <p style="font-size: 11px; color: #047857; margin: 4px 0 10px 0;">If you finished the payment on your device, click to settle your debt now:</p>
+                        <button type="button" class="btn-direct-pay" style="width: 100%; justify-content: center;" onclick="confirmDirectPayment()">✓ Yes, Payment Done! Clear Debt</button>
                     </div>
                 </div>
 
@@ -1862,14 +1966,90 @@
                 document.getElementById("checkoutTxnId").textContent = data.transactionId;
                 document.getElementById("checkoutQRCodeImg").src = data.qrCodeUrl;
                 document.getElementById("checkoutUpiIdText").textContent = data.recipient.upiId;
-                document.getElementById("checkoutUpiAppLink").href = data.upiUri;
+
+                const mainAutoBtn = document.getElementById("checkoutMainAutoLaunchBtn");
+                if (mainAutoBtn) {
+                    mainAutoBtn.href = data.upiUri;
+                }
+
+                // Set specific app links
+                const links = data.appLinks || {};
+                const gpayBtn = document.getElementById("btnLaunchGPay");
+                if (gpayBtn) gpayBtn.href = links.gpay || data.upiUri;
+
+                const phonepeBtn = document.getElementById("btnLaunchPhonePe");
+                if (phonepeBtn) phonepeBtn.href = links.phonepe || data.upiUri;
+
+                const paytmBtn = document.getElementById("btnLaunchPaytm");
+                if (paytmBtn) paytmBtn.href = links.paytm || data.upiUri;
+
+                const bhimBtn = document.getElementById("btnLaunchBhim");
+                if (bhimBtn) bhimBtn.href = links.universal || data.upiUri;
+
+                // Reset return banner
+                const returnBanner = document.getElementById("returnedFromUpiBanner");
+                if (returnBanner) returnBanner.style.display = "none";
 
                 closeModal("settleModal");
                 openModal("directCheckoutModal");
+
+                // Automatically trigger UPI app launch on mobile devices
+                const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+                if (isMobile) {
+                    setTimeout(() => {
+                        window.location.href = data.upiUri;
+                    }, 400);
+                }
             } catch (err) {
                 alert(err.message);
             }
         }
+
+        function openSpecificUpi(appType, e) {
+            if (e) e.preventDefault();
+            if (!currentPaymentOrder) return;
+            const links = currentPaymentOrder.appLinks || {};
+            const targetUri = links[appType] || currentPaymentOrder.upiUri;
+
+            // Trigger app intent
+            window.location.href = targetUri;
+
+            // Show return banner
+            const returnBanner = document.getElementById("returnedFromUpiBanner");
+            if (returnBanner) {
+                setTimeout(() => {
+                    returnBanner.style.display = "block";
+                }, 1000);
+            }
+        }
+
+        function copyUpiId() {
+            if (!currentPaymentOrder || !currentPaymentOrder.recipient) return;
+            const upiId = currentPaymentOrder.recipient.upiId;
+            navigator.clipboard.writeText(upiId).then(() => {
+                const btn = document.getElementById("btnCopyUpi");
+                if (btn) {
+                    btn.textContent = "✓ Copied!";
+                    setTimeout(() => { btn.textContent = "📋 Copy"; }, 2000);
+                }
+            }).catch(() => {
+                alert("UPI ID: " + upiId);
+            });
+        }
+
+        // Detect return to tab after paying in UPI app
+        window.addEventListener("focus", () => {
+            if (currentPaymentOrder && document.getElementById("directCheckoutModal").style.display === "flex") {
+                const returnBanner = document.getElementById("returnedFromUpiBanner");
+                if (returnBanner) returnBanner.style.display = "block";
+            }
+        });
+        document.addEventListener("visibilitychange", () => {
+            if (document.visibilityState === "visible" && currentPaymentOrder && document.getElementById("directCheckoutModal").style.display === "flex") {
+                const returnBanner = document.getElementById("returnedFromUpiBanner");
+                if (returnBanner) returnBanner.style.display = "block";
+            }
+        });
 
         function switchCheckoutMethod(method) {
             selectedCheckoutMethod = method;

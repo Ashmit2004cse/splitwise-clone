@@ -39,11 +39,13 @@
                     Contact
                 </a>
 
+                 <a href="/login" style="color: red !important; display: inline-block !important;">
+                  LOGIN
+                  </a>
 
-                <a href="/userPage">
-                    Sign up
-                </a>
-
+         <a href="/signup" style="color: blue !important; display: inline-block !important;">
+           SIGNUP
+           </a>
             </div>
 
         </nav>
@@ -73,9 +75,14 @@
                     trips, groups, friends, and family.
                 </p>
 
-                 <a href="/userPage">
-                 <button>sign up</button>
-                 </a>
+                <div style="display: flex; gap: 12px; align-items: center; margin: 15px 0;">
+                    <a href="/signup">
+                        <button style="cursor: pointer;">Sign up</button>
+                    </a>
+                    <a href="/login">
+                        <button style="cursor: pointer; background: white; color: #6c4cff; border: 2px solid #6c4cff;">Log in</button>
+                    </a>
+                </div>
 
                 <p>
                     Free for
@@ -652,15 +659,9 @@
             <ul>
 
                 <li>
-                    <a href="/userPage">
-                        Log in
-                    </a>
-                </li>
+                     <a href="/userPage"> Log in </a>
 
-                <li>
-                    <a href="/userPage">
-                        Sign up
-                    </a>
+                     <a href="/userPage"> Sign up </a>
                 </li>
 
                 <li>
@@ -719,12 +720,23 @@
         // Check if user is logged in to change navigation link dynamically
         const token = localStorage.getItem("splitwise_token");
         if (token) {
-            document.querySelectorAll('a[href="/userPage"]').forEach(link => {
-                link.href = "/dashboard";
-                if (link.textContent.trim().toLowerCase() === "sign up" || link.textContent.trim().toLowerCase() === "log in") {
-                    link.textContent = "Go to Dashboard";
+            fetch("/api/users/me", {
+                headers: { "Authorization": `Bearer ${token}` }
+            })
+            .then(res => {
+                if (res.ok) {
+                    document.querySelectorAll('a[href="/userPage"], a[href="/login"], a[href="/signup"]').forEach(link => {
+                        link.href = "/dashboard";
+                        if (link.textContent.trim().toLowerCase() === "sign up" || link.textContent.trim().toLowerCase() === "log in") {
+                            link.textContent = "Go to Dashboard";
+                        }
+                    });
+                } else if (res.status === 401 || res.status === 404) {
+                    localStorage.removeItem("splitwise_token");
+                    localStorage.removeItem("splitwise_user");
                 }
-            });
+            })
+            .catch(() => {});
         }
     </script>
 </body>

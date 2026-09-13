@@ -213,23 +213,34 @@
     <script>
         let mode = "login"; // "login" or "signup"
 
-        // If user is already logged in with valid token, redirect to dashboard
         window.addEventListener("DOMContentLoaded", () => {
+            // Check query parameter or path to pick mode
+            const urlParams = new URLSearchParams(window.location.search);
+            const pathName = window.location.pathname.toLowerCase();
+            const requestedMode = urlParams.get("mode") || (pathName.includes("signup") ? "signup" : "login");
+            switchMode(requestedMode);
+
+            // If user has a token, verify it with the server
             const token = localStorage.getItem("splitwise_token");
             if (token) {
-                // Verify token by calling /api/users/me
                 fetch("/api/users/me", {
                     headers: { "Authorization": `Bearer ${token}` }
                 })
                 .then(res => {
-                    if (res.ok) window.location.href = "/dashboard";
+                    if (res.ok) {
+                        window.location.href = "/dashboard";
+                    } else if (res.status === 401 || res.status === 404) {
+                        // Stale or invalid token from old session, remove it cleanly
+                        localStorage.removeItem("splitwise_token");
+                        localStorage.removeItem("splitwise_user");
+                    }
                 })
                 .catch(() => {});
             }
         });
 
         function switchMode(newMode) {
-            mode = newMode;
+            mode = newMode === "signup" ? "signup" : "login";
             const alertBox = document.getElementById("alertBox");
             alertBox.style.display = "none";
 
@@ -278,11 +289,20 @@
             const password = document.getElementById("password").value;
             const name = document.getElementById("name").value.trim();
 
+            if (!email || !password) {
+                showAlert("Email and password are required");
+                return;
+            }
+
             submitBtn.disabled = true;
             submitBtn.textContent = mode === "signup" ? "Creating account..." : "Logging in...";
 
             try {
                 if (mode === "signup") {
+                    if (!name) {
+                        throw new Error("Full name is required to sign up");
+                    }
+
                     const res = await fetch("/api/auth/signup", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
@@ -294,9 +314,19 @@
                         throw new Error(data.message || "Failed to sign up");
                     }
 
+                    if (data.token) {
+                        localStorage.setItem("splitwise_token", data.token);
+                        localStorage.setItem("splitwise_user", JSON.stringify(data.user));
+                        showAlert("Account created! Redirecting to dashboard...", true);
+                        setTimeout(() => {
+                            window.location.href = "/dashboard";
+                        }, 500);
+                        return;
+                    }
+
                     showAlert("Account created! Logging in...", true);
 
-                    // Auto login after signup
+                    // Fallback auto login
                     const loginRes = await fetch("/api/auth/login", {
                         method: "POST",
                         headers: { "Content-Type": "application/json" },
@@ -308,10 +338,10 @@
                         localStorage.setItem("splitwise_user", JSON.stringify(loginData.user));
                         setTimeout(() => {
                             window.location.href = "/dashboard";
-                        }, 800);
+                        }, 500);
                     } else {
                         switchMode("login");
-                        showAlert("Please log in with your credentials", true);
+                        showAlert("Account created! Please log in with your credentials", true);
                     }
                 } else {
                     const res = await fetch("/api/auth/login", {
@@ -331,7 +361,7 @@
 
                     setTimeout(() => {
                         window.location.href = "/dashboard";
-                    }, 500);
+                    }, 400);
                 }
             } catch (err) {
                 showAlert(err.message || "An unexpected error occurred");

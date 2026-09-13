@@ -1,5 +1,49 @@
-const Group = require("../models/Group");
-const User = require("../models/User");
+const { db } = require("../config/firebase");
+
+// Helper function to get user details
+const getUserDetails = async (userId) => {
+  const userDoc = await db
+    .collection("users")
+    .doc(userId)
+    .get();
+
+  if (!userDoc.exists) {
+    return null;
+  }
+
+  const userData = userDoc.data();
+
+  return {
+    _id: userDoc.id,
+    id: userDoc.id,
+    name: userData.name || "",
+    email: userData.email || "",
+  };
+};
+
+// Helper function to populate group members and creator
+const populateGroup = async (groupDoc) => {
+  const groupData = groupDoc.data();
+
+  const memberIds = Array.isArray(groupData.members)
+    ? groupData.members
+    : [];
+
+  const members = await Promise.all(
+    memberIds.map((memberId) => getUserDetails(memberId))
+  );
+
+  const createdBy = await getUserDetails(groupData.createdBy);
+
+  return {
+    _id: groupDoc.id,
+    id: groupDoc.id,
+    name: groupData.name,
+    createdBy,
+    members: members.filter((member) => member !== null),
+    createdAt: groupData.createdAt || null,
+  };
+};
 
 // CREATE GROUP
 const createGroup = async (req, res) => {
@@ -14,27 +58,32 @@ const createGroup = async (req, res) => {
 
     const memberIds = Array.isArray(members) ? members : [];
 
-    const group = await Group.create({
+    // Make sure current user is always a member
+    const groupMembers = [
+      req.userId,
+      ...memberIds.filter(
+        (id) => id.toString() !== req.userId.toString()
+      ),
+    ];
+
+    const groupRef = await db.collection("groups").add({
       name,
       createdBy: req.userId,
-      members: [
-        req.userId,
-        ...memberIds.filter(
-          (id) => id.toString() !== req.userId.toString()
-        ),
-      ],
+      members: groupMembers,
+      createdAt: new Date(),
     });
 
-    const populatedGroup = await group.populate(
-      "members",
-      "name email"
-    );
+    const groupDoc = await groupRef.get();
+
+    const populatedGroup = await populateGroup(groupDoc);
 
     res.status(201).json({
       message: "Group created successfully",
       group: populatedGroup,
     });
   } catch (error) {
+    console.error("Create group error:", error);
+
     res.status(500).json({
       message: error.message,
     });
@@ -44,14 +93,19 @@ const createGroup = async (req, res) => {
 // GET MY GROUPS
 const getMyGroups = async (req, res) => {
   try {
-    const groups = await Group.find({
-      members: req.userId,
-    })
-      .populate("members", "name email")
-      .populate("createdBy", "name email");
+    const snapshot = await db
+      .collection("groups")
+      .where("members", "array-contains", req.userId)
+      .get();
+
+    const groups = await Promise.all(
+      snapshot.docs.map((doc) => populateGroup(doc))
+    );
 
     res.json(groups);
   } catch (error) {
+    console.error("Get groups error:", error);
+
     res.status(500).json({
       message: error.message,
     });
@@ -61,19 +115,26 @@ const getMyGroups = async (req, res) => {
 // GET SINGLE GROUP
 const getGroup = async (req, res) => {
   try {
-    const group = await Group.findById(req.params.id)
-      .populate("members", "name email")
-      .populate("createdBy", "name email");
+    const groupDoc = await db
+      .collection("groups")
+      .doc(req.params.id)
+      .get();
 
-    if (!group) {
+    if (!groupDoc.exists) {
       return res.status(404).json({
         message: "Group not found",
       });
     }
 
-    const isMember = group.members.some(
-      (member) =>
-        member._id.toString() === req.userId.toString()
+    const groupData = groupDoc.data();
+
+    const memberIds = Array.isArray(groupData.members)
+      ? groupData.members
+      : [];
+
+    const isMember = memberIds.some(
+      (memberId) =>
+        memberId.toString() === req.userId.toString()
     );
 
     if (!isMember) {
@@ -82,8 +143,12 @@ const getGroup = async (req, res) => {
       });
     }
 
+    const group = await populateGroup(groupDoc);
+
     res.json(group);
   } catch (error) {
+    console.error("Get group error:", error);
+
     res.status(500).json({
       message: error.message,
     });
@@ -95,16 +160,29 @@ const addMember = async (req, res) => {
   try {
     const { email } = req.body;
 
-    const group = await Group.findById(req.params.id);
+    if (!email) {
+      return res.status(400).json({
+        message: "Email is required",
+      });
+    }
 
-    if (!group) {
+    const groupRef = db
+      .collection("groups")
+      .doc(req.params.id);
+
+    const groupDoc = await groupRef.get();
+
+    if (!groupDoc.exists) {
       return res.status(404).json({
         message: "Group not found",
       });
     }
 
+    const groupData = groupDoc.data();
+
+    // Check group creator
     if (
-      group.createdBy.toString() !==
+      groupData.createdBy.toString() !==
       req.userId.toString()
     ) {
       return res.status(403).json({
@@ -112,16 +190,29 @@ const addMember = async (req, res) => {
       });
     }
 
-    const user = await User.findOne({ email });
+    // Find user by email
+    const userSnapshot = await db
+      .collection("users")
+      .where("email", "==", email)
+      .limit(1)
+      .get();
 
-    if (!user) {
+    if (userSnapshot.empty) {
       return res.status(404).json({
         message: "User not found",
       });
     }
 
-    const isAlreadyMember = group.members.some(
-      (memberId) => memberId.toString() === user._id.toString()
+    const userDoc = userSnapshot.docs[0];
+
+    const members = Array.isArray(groupData.members)
+      ? groupData.members
+      : [];
+
+    // Check if already member
+    const isAlreadyMember = members.some(
+      (memberId) =>
+        memberId.toString() === userDoc.id.toString()
     );
 
     if (isAlreadyMember) {
@@ -130,13 +221,18 @@ const addMember = async (req, res) => {
       });
     }
 
-    group.members.push(user._id);
+    // Add new member
+    members.push(userDoc.id);
 
-    await group.save();
+    await groupRef.update({
+      members,
+    });
 
-    const populatedGroup = await group.populate(
-      "members",
-      "name email"
+    // Get updated group
+    const updatedGroupDoc = await groupRef.get();
+
+    const populatedGroup = await populateGroup(
+      updatedGroupDoc
     );
 
     res.json({
@@ -144,6 +240,8 @@ const addMember = async (req, res) => {
       group: populatedGroup,
     });
   } catch (error) {
+    console.error("Add member error:", error);
+
     res.status(500).json({
       message: error.message,
     });
@@ -156,3 +254,4 @@ module.exports = {
   getGroup,
   addMember,
 };
+

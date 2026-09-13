@@ -1,6 +1,6 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const User = require("../models/User");
+const { db } = require("../config/firebase");
 
 // SIGNUP
 const signup = async (req, res) => {
@@ -13,33 +13,73 @@ const signup = async (req, res) => {
       });
     }
 
-    const existingUser = await User.findOne({ email });
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanName = name.trim();
 
-    if (existingUser) {
+    // Check if user already exists in Firebase Firestore (case-insensitive check)
+    let existingUserSnapshot = await db
+      .collection("users")
+      .where("email", "==", cleanEmail)
+      .limit(1)
+      .get();
+
+    if (!existingUserSnapshot.empty) {
       return res.status(400).json({
-        message: "User already exists",
+        message: "User already exists with this email",
       });
     }
 
+    // Double check with case-insensitive scan
+    const allUsersSnap = await db.collection("users").get();
+    const alreadyExists = allUsersSnap.docs.some(
+      (doc) => (doc.data().email || "").trim().toLowerCase() === cleanEmail
+    );
+
+    if (alreadyExists) {
+      return res.status(400).json({
+        message: "User already exists with this email",
+      });
+    }
+
+    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const user = await User.create({
-      name,
-      email,
+    // Create user in Firebase Firestore
+    const userRef = await db.collection("users").add({
+      name: cleanName,
+      email: cleanEmail,
       password: hashedPassword,
+      createdAt: new Date(),
     });
+
+    // Generate JWT Token immediately upon signup
+    const token = jwt.sign(
+      {
+        userId: userRef.id,
+      },
+      process.env.JWT_SECRET || "default_splitwise_secret",
+      {
+        expiresIn: "7d",
+      }
+    );
+
+    const userObj = {
+      _id: userRef.id,
+      id: userRef.id,
+      name: cleanName,
+      email: cleanEmail,
+    };
 
     res.status(201).json({
       message: "Account created successfully",
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-      },
+      token,
+      user: userObj,
     });
   } catch (error) {
+    console.error("Signup error:", error);
+
     res.status(500).json({
-      message: error.message,
+      message: error.message || "Failed to create account",
     });
   }
 };
@@ -55,14 +95,42 @@ const login = async (req, res) => {
       });
     }
 
-    const user = await User.findOne({ email });
+    const cleanEmail = email.trim().toLowerCase();
 
-    if (!user) {
+    // Find user in Firebase Firestore
+    let userSnapshot = await db
+      .collection("users")
+      .where("email", "==", cleanEmail)
+      .limit(1)
+      .get();
+
+    let userDoc = null;
+
+    if (!userSnapshot.empty) {
+      userDoc = userSnapshot.docs[0];
+    } else {
+      // Fallback: check case-insensitively across existing users
+      const allUsersSnap = await db.collection("users").get();
+      userDoc = allUsersSnap.docs.find(
+        (doc) => (doc.data().email || "").trim().toLowerCase() === cleanEmail
+      );
+    }
+
+    if (!userDoc) {
       return res.status(401).json({
         message: "Invalid email or password",
       });
     }
 
+    const userData = userDoc.data();
+
+    const user = {
+      _id: userDoc.id,
+      id: userDoc.id,
+      ...userData,
+    };
+
+    // Compare password
     const passwordMatch = await bcrypt.compare(
       password,
       user.password
@@ -74,11 +142,12 @@ const login = async (req, res) => {
       });
     }
 
+    // Generate JWT
     const token = jwt.sign(
       {
-        userId: user._id,
+        userId: user.id,
       },
-      process.env.JWT_SECRET,
+      process.env.JWT_SECRET || "default_splitwise_secret",
       {
         expiresIn: "7d",
       }
@@ -88,14 +157,19 @@ const login = async (req, res) => {
       message: "Login successful",
       token,
       user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
+        _id: user.id,
+        id: user.id,
+        name: user.name || "",
+        email: user.email || "",
+        upiId: user.upiId || "",
+        phone: user.phone || "",
       },
     });
   } catch (error) {
+    console.error("Login error:", error);
+
     res.status(500).json({
-      message: error.message,
+      message: error.message || "Login failed",
     });
   }
 };
