@@ -15,8 +15,9 @@ if (!serviceAccount.project_id ||
   throw new Error("Firebase environment variables are missing");
 }
 
+// Fixed: use admin.credential.cert() instead of admin.cert()
 const app = admin.initializeApp({
-  credential: admin.cert(serviceAccount),
+  credential: admin.credential.cert(serviceAccount),
 });
 
 const db = getFirestore(app);
